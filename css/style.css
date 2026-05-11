@@ -690,9 +690,14 @@ body {
 .footer-ornate { color: var(--gold); margin: 0 10px; }
 
 /* ===== Responsive ===== */
+/* JS จัดการ radius ตาม vw แล้ว
+   CSS แก้แค่ container height, margin, fan-wrap bottom ให้พัดไม่ทับข้อความ
+   และ tarot-card CSS (ใช้สำหรับ transition/hover เท่านั้น ไม่ใช่ size) */
+
 @media (max-width: 1024px) {
+  /* fan-wrap pivot ต่ำลง, container เล็กลง, margin ยังต้องมีพอ */
   .fan-wrap { bottom: 120px; }
-  .fan-container { height: 300px; margin: 30px 0 20px; }
+  .fan-container { height: 380px; margin: 120px 0 20px; }
 }
 
 @media (max-width: 768px) {
@@ -700,14 +705,7 @@ body {
   .title-main { font-size: 1.3rem; letter-spacing: 0.25em; }
   .moon { width: 50px; height: 50px; top: 20px; right: 20px; }
   .fan-wrap { bottom: 100px; }
-  .fan-container { height: 220px; margin: 20px 0 30px; }
-  .tarot-card {
-    width: 55px;
-    height: 88px;
-    left: -27.5px;
-    bottom: 40px;
-    transform-origin: 50% calc(100% + 40px);
-  }
+  .fan-container { height: 310px; margin: 100px 0 20px; }
   .selected-card-display { width: 110px; height: 188px; }
   .reading-block { padding: 20px; }
   .reading-text { font-size: 1rem; }
@@ -718,14 +716,9 @@ body {
 }
 
 @media (max-width: 480px) {
-  .fan-wrap { bottom: 80px; }
-  .fan-container { height: 180px; }
   .title-thai { font-size: 1.9rem; }
-  .tarot-card {
-    width: 44px;
-    height: 70px;
-    left: -22px;
-    bottom: 30px;
-    transform-origin: 50% calc(100% + 30px);
-  }
+  .fan-wrap { bottom: 80px; }
+  .fan-container { height: 240px; margin: 80px 0 20px; }
+  .draw-position { font-size: 1.25rem; }
+  .draw-position-desc { font-size: 0.85rem; }
 }
