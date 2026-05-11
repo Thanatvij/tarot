@@ -73,9 +73,9 @@ function buildFan() {
   const angleStart = -angleSpread / 2;
   const angleStep = angleSpread / (totalCards - 1);
 
-  // Responsive radius: desktop เหมือนเดิม, mobile ย่อลง
+  // Responsive radius — คำนวณให้พอดีกับ container height ทุก breakpoint
   const vw = window.innerWidth;
-  const radius = vw > 1024 ? 320 : vw > 768 ? 245 : vw > 480 ? 175 : 130;
+  const radius = vw > 1024 ? 220 : vw > 768 ? 160 : vw > 480 ? 115 : 95;
 
   shuffled.forEach((cardId, idx) => {
     const angle = angleStart + angleStep * idx;
@@ -99,7 +99,7 @@ function buildFan() {
 
     cardEl.innerHTML = `
       <div class="card-inner">
-        <div class="card-face card-back">${cardBackSVG(cardId)}</div>
+        <div class="card-face card-back">${cardBackSVG()}</div>
       </div>
     `;
     cardEl.addEventListener('click', () => onCardPick(cardEl, cardId));
@@ -107,16 +107,16 @@ function buildFan() {
   });
 }
 
-function cardBackSVG(uid) {
+function cardBackSVG() {
   return `
     <svg viewBox="0 0 60 90" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <radialGradient id="bg-grad-${uid}" cx="50%" cy="50%" r="60%">
+        <radialGradient id="bg-grad" cx="50%" cy="50%" r="60%">
           <stop offset="0%" stop-color="#4a1f7a" stop-opacity="0.95"/>
           <stop offset="50%" stop-color="#2a0d4a" stop-opacity="0.98"/>
           <stop offset="100%" stop-color="#0a0014" stop-opacity="1"/>
         </radialGradient>
-        <linearGradient id="gold-shine-${uid}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="gold-shine" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#ffd700" stop-opacity="0.3"/>
           <stop offset="50%" stop-color="#d4af37" stop-opacity="0.1"/>
           <stop offset="100%" stop-color="#ffd700" stop-opacity="0.3"/>
@@ -124,12 +124,12 @@ function cardBackSVG(uid) {
       </defs>
 
       <!-- Main card background -->
-      <rect x="2" y="2" width="56" height="86" rx="4" fill="url(#bg-grad-${uid})"
+      <rect x="2" y="2" width="56" height="86" rx="4" fill="url(#bg-grad)"
             stroke="#d4af37" stroke-width="0.8"/>
 
       <!-- Inner decorative border -->
       <rect x="5" y="5" width="50" height="80" rx="2" fill="none"
-            stroke="url(#gold-shine-${uid})" stroke-width="0.5"/>
+            stroke="url(#gold-shine)" stroke-width="0.5"/>
 
       <!-- Center mystical emblem -->
       <g transform="translate(30, 45)">
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-// Rebuild fan on resize/orientation change
+// Rebuild fan เมื่อหมุนมือถือ
 window.addEventListener('resize', () => {
   if (document.getElementById('section-draw').classList.contains('active')) {
     buildFan();
