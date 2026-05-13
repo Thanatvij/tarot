@@ -366,6 +366,34 @@ body {
   font-size: 0.95rem;
 }
 
+@media (max-width: 640px) {
+  .draw-position {
+    font-size: 1.4rem;
+  }
+  .draw-position-desc {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .draw-position {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+  }
+  .draw-position-desc {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .draw-position {
+    font-size: 1.15rem;
+  }
+  .draw-position-desc {
+    font-size: 0.8rem;
+  }
+}
+
 .draw-progress {
   display: flex;
   justify-content: center;
@@ -833,6 +861,11 @@ body {
   .category-emoji { font-size: 2rem; }
   .category-name { font-size: 1rem; }
   .btn-primary { padding: 14px 40px; font-size: 1rem; }
+  .fan-container {
+    height: 320px;
+    margin: 80px 0 20px;
+  }
+  .fan-wrap { bottom: 25px; }
 }
 
 /* ========================================================================
