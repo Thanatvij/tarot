@@ -872,9 +872,10 @@ body {
   .fan-container {
     height: 320px;
     margin: 70px 0 20px;
-    transform: scale(1.25) translateX(-20px);
-    width: 110vw;
-    left: -5vw;
+    transform: scale(1.25) translateX(-8px);
+    width: 100vw;
+    left: 0;
+    overflow: visible;
   }
   .fan-wrap { bottom: 25px; transform: scale(1.25); }
 
