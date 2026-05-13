@@ -9,11 +9,40 @@ const POSITIONS = [
   { icon: '⭐', title: 'บทสรุป', desc: 'ผลลัพธ์ คำชี้แนะ' }
 ];
 
+const POSITIONS_FUTURE = [
+  { icon: '🌅', title: 'อดีต', desc: 'สิ่งที่ผ่านมา ประสบการณ์ที่ส่งผลถึงปัจจุบัน' },
+  { icon: '🌙', title: 'ปัจจุบัน', desc: 'สิ่งที่เกิดขึ้นตอนนี้ สถานการณ์ปัจจุบัน' },
+  { icon: '✨', title: 'อนาคต', desc: 'สิ่งที่จะเกิดขึ้น 1-3 เดือน แนวโลคที่อาจเป็น' }
+];
+
+// Keywords สำหรับ detect คำถามเชิงอนาคต
+const FUTURE_KEYWORDS = [
+  // คำถามเชิงอนาคต
+  'จะ', 'ไหม', 'มั้ย', 'อนาคต', 'หน้า', 'ต่อไป', 'รุ่ง',
+  // คำถามเชิงผล/คำตอบ
+  'เป้า', 'ทัน', 'ได้', 'เป็นยังไง', 'ผล',
+  // คำถามเชิงความเป็นไปได้
+  'รอด', 'สำเร็จ', 'ชนะ', 'ไปต่อ', 'แต่ง', 'รับ'
+];
+
 let selectedCategory = null;
 let userQuestion = '';
 let drawnCards = [];
 let currentDrawIndex = 0;
+let currentSpreadType = 'default'; // 'default' or 'future'
 let TAROT_DATA = null; // Will be loaded from tarot-all.json
+
+// ตรวจสอบว่าคำถามเป็นเชิงอนาคตหรือไม่
+function isFutureQuestion(question) {
+  if (!question) return false;
+  const lowerQ = question.toLowerCase();
+  return FUTURE_KEYWORDS.some(keyword => lowerQ.includes(keyword));
+}
+
+// ดึงตำแหน่งไพ่ตามประเภทคำถาม
+function getCurrentPositions() {
+  return currentSpreadType === 'future' ? POSITIONS_FUTURE : POSITIONS;
+}
 
 function createStarfield() {
   const sf = document.getElementById('starfield');
@@ -42,6 +71,10 @@ function goToCategory() { showSection('section-category'); }
 function goToDraw() {
   if (!selectedCategory) return;
   userQuestion = document.getElementById('questionInput').value.trim();
+
+  // Detect ประเภทคำถามและเลือก spread
+  currentSpreadType = isFutureQuestion(userQuestion) ? 'future' : 'default';
+
   drawnCards = [];
   currentDrawIndex = 0;
   buildFan();
@@ -97,11 +130,24 @@ function buildFan() {
     cardEl.style.transform =
       `translate(${x}px, ${-y}px) rotate(${angle}deg)`;
 
+    // สุ่มสุ่มได้ 30% ที่ไพ่จะเป็นกลับหัว
+    const isReversed = Math.random() < 0.3;
+    cardEl.dataset.reversed = isReversed;
+
     cardEl.innerHTML = `
       <div class="card-inner">
         <div class="card-face card-back">${cardBackSVG()}</div>
       </div>
     `;
+
+    // ถ้ากลับหัว หมุนเฉพาะ card-inner
+    if (isReversed) {
+      const cardInner = cardEl.querySelector('.card-inner');
+      if (cardInner) {
+        cardInner.style.transform = 'rotate(180deg)';
+      }
+    }
+
     cardEl.addEventListener('click', () => onCardPick(cardEl, cardId));
     wrap.appendChild(cardEl);
   });
@@ -192,6 +238,8 @@ function onCardPick(cardEl, cardId) {
   if (currentDrawIndex >= 3) return;
 
   const card = TAROT_DATA.cards.find(c => c.id === cardId);
+  // อ่านค่า reversed จาก dataset แล้วเก็บไว้ใน card object
+  card.isReversed = cardEl.dataset.reversed === 'true';
   drawnCards.push(card);
   cardEl.classList.add('selected');
   currentDrawIndex++;
@@ -204,7 +252,8 @@ function onCardPick(cardEl, cardId) {
 }
 
 function updateDrawStatus() {
-  const pos = POSITIONS[currentDrawIndex];
+  const positions = getCurrentPositions();
+  const pos = positions[currentDrawIndex];
   document.getElementById('drawPosition').textContent =
     `${pos.icon} ใบที่ ${currentDrawIndex + 1}: ${pos.title}`;
   document.getElementById('drawDesc').textContent = pos.desc;
@@ -217,6 +266,7 @@ function updateDrawStatus() {
 }
 
 function showResult() {
+  const positions = getCurrentPositions();
   const sub = document.getElementById('resultSubtitle');
   let subText = `หมวด: ${CATEGORY_LABEL[selectedCategory]}`;
   if (userQuestion) subText += ` · "${userQuestion}"`;
@@ -225,30 +275,34 @@ function showResult() {
   const cardsEl = document.getElementById('selectedCardsDisplay');
   cardsEl.innerHTML = drawnCards.map((card, i) => `
     <div class="selected-card-wrap">
-      <div class="selected-card-display">
+      <div class="selected-card-display ${card.isReversed ? 'card-reversed' : ''}">
+        ${card.isReversed ? '<div class="reversed-badge">กลับหัว</div>' : ''}
         <img src="${card.image}" alt="${card.nameEn}" loading="lazy">
       </div>
       <div class="selected-card-name">${card.nameTh}</div>
       <div class="selected-card-name-en">${card.nameEn}</div>
-      <div class="position-label">${POSITIONS[i].icon} ${POSITIONS[i].title}</div>
+      <div class="position-label">${positions[i].icon} ${positions[i].title}</div>
     </div>
   `).join('');
 
   const readings = document.getElementById('readingsContainer');
   let html = '';
   drawnCards.forEach((card, i) => {
-    const meaning = card.meanings[selectedCategory];
+    // ใช้ meaningsReversed ถ้าไพ่กลับหัว ถ้าไม่กลับหัวใช้ meanings ปกติ
+    const meaning = card.isReversed ? card.meaningsReversed[selectedCategory] : card.meanings[selectedCategory];
     html += `
-      <div class="reading-block">
+      <div class="reading-block ${card.isReversed ? 'reading-reversed' : ''}">
         <div class="reading-header">
-          <span class="reading-icon">${POSITIONS[i].icon}</span>
-          <div class="reading-title">${POSITIONS[i].title}</div>
+          <span class="reading-icon">${positions[i].icon}</span>
+          <div class="reading-title">${positions[i].title}</div>
           <div class="reading-card-name">
             ${card.nameTh}
             <span class="en">${card.nameEn}</span>
+            ${card.isReversed ? '<span class="reversed-indicator"> (กลับหัว)</span>' : ''}
           </div>
         </div>
         <div class="reading-text">${meaning}</div>
+        ${card.isReversed ? '<div class="reversed-note">⚠️ ไพ่กลับหัว: ความหมายตรงกันข้ามจากปกติ สะท้อนพลังงานที่ถูกบดบัง หรือสิ่งที่ต้องระวัง</div>' : ''}
       </div>
     `;
   });
@@ -318,6 +372,7 @@ function resetAll() {
   userQuestion = '';
   drawnCards = [];
   currentDrawIndex = 0;
+  currentSpreadType = 'default';
   document.getElementById('questionInput').value = '';
   document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('btnStartDraw').disabled = true;
@@ -346,6 +401,319 @@ async function loadTarotData() {
   }
 }
 
+// ========================
+// Share Image Feature
+// ========================
+
+// Load image with CORS for canvas
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+    img.src = url;
+  });
+}
+
+// Generate share image canvas (1080x1080)
+async function generateShareImage() {
+  await document.fonts.ready;
+  await new Promise(resolve => setTimeout(resolve, 600));
+
+  const scale = 2;
+  const w = 1080, h = 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = w * scale;
+  canvas.height = h * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+
+  // ===== BACKGROUND =====
+  const bg = ctx.createRadialGradient(w/2, h/2, 200, w/2, h/2, 800);
+  bg.addColorStop(0, '#2a0047');
+  bg.addColorStop(0.5, '#150024');
+  bg.addColorStop(1, '#0a0010');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Stars
+  const drawStar = (x, y, r) => {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.4+0.4})`;
+    ctx.fill();
+  };
+  for (let i = 0; i < 70; i++) {
+    drawStar(Math.random()*w, Math.random()*h, Math.random()*1.5+0.5);
+  }
+
+  // ===== MOON =====
+  const mx = 940, my = 85, mr = 50;
+  const mg = ctx.createRadialGradient(mx, my, 0, mx, my, mr*3);
+  mg.addColorStop(0, 'rgba(255,215,0,0.4)');
+  mg.addColorStop(1, 'transparent');
+  ctx.fillStyle = mg;
+  ctx.beginPath(); ctx.arc(mx, my, mr*3, 0, Math.PI*2); ctx.fill();
+
+  const mb = ctx.createRadialGradient(mx-10, my-10, 0, mx, my, mr);
+  mb.addColorStop(0, '#ffffd8');
+  mb.addColorStop(0.7, '#ffd700');
+  mb.addColorStop(1, '#c9a227');
+  ctx.fillStyle = mb;
+  ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI*2); ctx.fill();
+
+  // ===== HEADER =====
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,215,0,0.7)';
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetY = 0;
+  ctx.fillStyle = '#ffe44d';
+  ctx.font = 'bold 60px "Cinzel","Georgia",serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('พยากรณ์แห่งดวงดาว', w/2, 72);
+  ctx.restore();
+
+  // Divider line
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(150, 105);
+  ctx.lineTo(930, 105);
+  ctx.stroke();
+
+  // Category badge
+  ctx.fillStyle = 'rgba(212,175,55,0.2)';
+  ctx.beginPath();
+  ctx.roundRect(w/2 - 130, 120, 260, 40, 20);
+  ctx.fill();
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 26px "Noto Serif Thai","Thonburi","Microsoft Sans Serif",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(CATEGORY_LABEL[selectedCategory], w/2, 142);
+
+  // ===== CARDS (CENTERED PROPERLY) =====
+  const cw = 210;  // Card width
+  const ch = 336;  // Card height
+  const gap = 35;  // Gap between cards
+
+  // Calculate center position: total width of all cards + gaps
+  const totalWidth = (cw * 3) + (gap * 2);
+  const startX = (w - totalWidth) / 2;
+  const cy = 200;  // Card Y position
+
+  try {
+    const imgs = await Promise.all(drawnCards.map(c => loadImage(c.image)));
+    const pos = getCurrentPositions();
+
+    imgs.forEach((img, i) => {
+      const cx = startX + (i * (cw + gap));
+
+      // Purple glow behind card
+      const gg = ctx.createRadialGradient(cx + cw/2, cy + ch/2, 0, cx + cw/2, cy + ch/2, 180);
+      gg.addColorStop(0, 'rgba(147,51,234,0.25)');
+      gg.addColorStop(1, 'transparent');
+      ctx.fillStyle = gg;
+      ctx.fillRect(cx - 50, cy - 50, cw + 100, ch + 100);
+
+      // Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(cx + 12, cy + 12, cw, ch);
+
+      // Card border - outer gold
+      ctx.strokeStyle = '#ffd700';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(cx - 3, cy - 3, cw + 6, ch + 6);
+
+      // Card border - inner gold
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cx, cy, cw, ch);
+
+      // Card image
+      ctx.save();
+      if (drawnCards[i].isReversed) {
+        ctx.translate(cx + cw/2, cy + ch/2);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(img, -cw/2, -ch/2, cw, ch);
+      } else {
+        ctx.drawImage(img, cx, cy, cw, ch);
+      }
+      ctx.restore();
+
+      // Card name background (bigger to fit text)
+      ctx.fillStyle = 'rgba(10,0,20,0.9)';
+      ctx.beginPath();
+      ctx.roundRect(cx - 12, cy + ch + 8, cw + 24, 40, 10);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(212,175,55,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Card name
+      ctx.fillStyle = '#f5e6d3';
+      ctx.font = 'bold 20px "Noto Serif Thai","Thonburi","Microsoft Sans Serif",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(drawnCards[i].nameTh, cx + cw/2, cy + ch + 30);
+
+      // Position indicator (moved down more)
+      const iy = cy + ch + 62;
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 17px "Noto Serif Thai","Thonburi","Microsoft Sans Serif",sans-serif';
+      ctx.fillText(`${pos[i].icon} ${pos[i].title}`, cx + cw/2, iy);
+
+      // Reversed badge
+      if (drawnCards[i].isReversed) {
+        ctx.fillStyle = '#ff5555';
+        ctx.font = 'bold 14px "Sarabun","Microsoft Sans Serif",sans-serif';
+        ctx.fillText('(กลับหัว)', cx + cw/2, iy + 22);
+      }
+    });
+
+    // ===== FOOTER =====
+    const fy = h - 75;
+
+    // Top line
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(170, fy);
+    ctx.lineTo(910, fy);
+    ctx.stroke();
+
+    // Center diamond
+    const drawDiamond = (x, y, s) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y - s);
+      ctx.lineTo(x + s, y);
+      ctx.lineTo(x, y + s);
+      ctx.lineTo(x - s, y);
+      ctx.closePath();
+      ctx.fill();
+    };
+
+    ctx.fillStyle = '#ffd700';
+    drawDiamond(w/2, fy, 10);
+    ctx.fillStyle = '#d4af37';
+    drawDiamond(w/2 - 50, fy, 6);
+    drawDiamond(w/2 + 50, fy, 6);
+
+    // Side stars
+    drawStar(300, fy, 3);
+    drawStar(780, fy, 3);
+
+    // Watermark
+    ctx.fillStyle = 'rgba(212,175,55,0.4)';
+    ctx.font = '18px "Cinzel","Georgia",serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✦ thanatvij.github.io ✦', w/2, fy + 35);
+
+    // Corner ornaments
+    const drawCorner = (x, y, r) => {
+      ctx.strokeStyle = 'rgba(212,175,55,0.6)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x + r + 5, y);
+      ctx.lineTo(x + r + 30, y);
+      ctx.moveTo(x, y + r + 5);
+      ctx.lineTo(x, y + r + 30);
+      ctx.stroke();
+    };
+
+    drawCorner(40, 40, 8);
+    drawCorner(w-40, 40, 8);
+    drawCorner(40, h-40, 8);
+    drawCorner(w-40, h-40, 8);
+
+    return canvas;
+  } catch (error) {
+    console.error('Error generating share image:', error);
+    throw error;
+  }
+}
+
+// Share or download the generated image
+async function shareResult() {
+  const btn = document.getElementById('btnShare');
+  if (!btn) return;
+
+  // Update button state
+  const originalText = btn.textContent;
+  btn.textContent = 'กำลังสร้างภาพ...';
+  btn.disabled = true;
+
+  try {
+    const canvas = await generateShareImage();
+
+    // Convert to blob with high quality
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error('Failed to create blob'));
+      }, 'image/png', 1.0);
+    });
+
+    const fileName = `tarot-${Date.now()}.png`;
+
+    // Check if native share is available (mobile)
+    if (navigator.canShare && navigator.share) {
+      try {
+        const file = new File([blob], fileName, { type: 'image/png' });
+        await navigator.share({
+          files: [file],
+          title: 'พยากรณ์แห่งดวงดาว',
+          text: `ผลการอ่านไพ่ทาโรต์ - ${CATEGORY_LABEL[selectedCategory]}`
+        });
+      } catch (shareError) {
+        // If share fails (user cancelled), fallback to download
+        console.log('Share cancelled or failed, downloading instead');
+        downloadImage(blob, fileName);
+      }
+    } else {
+      // Desktop - download directly
+      downloadImage(blob, fileName);
+    }
+  } catch (error) {
+    console.error('Error sharing image:', error);
+    alert('ไม่สามารถสร้างภาพได้ กรุณาลองใหม่อีกครั้ง');
+  } finally {
+    // Restore button state
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+
+// Helper function to download image
+function downloadImage(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+
+  // Trigger download
+  a.click();
+
+  // Cleanup
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
   await loadTarotData();
@@ -358,6 +726,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('btnStartDraw').disabled = false;
     });
   });
+
+  // Setup share button
+  const shareBtn = document.getElementById('btnShare');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', shareResult);
+  }
 });
 
 // Rebuild fan เมื่อหมุนมือถือ
