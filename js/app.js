@@ -883,6 +883,8 @@ function downloadImage(blob, fileName) {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadTarotData();
   createStarfield();
+  initCardOfDay();
+  initZodiacModal();
   document.querySelectorAll('.category-card').forEach(card => {
     card.addEventListener('click', () => {
       document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
@@ -911,3 +913,155 @@ window.addEventListener('resize', () => {
     buildFan(currentShuffledIds, true, false);
   }
 });
+
+// ========================================================================
+// WIDGET 1: CARD OF THE DAY
+// ========================================================================
+
+function initCardOfDay() {
+  const today = new Date();
+  const seed = today.getFullYear() * 10000 +
+               (today.getMonth() + 1) * 100 +
+               today.getDate();
+  const cardIndex = seed % 78;
+  const card = TAROT_DATA.cards[cardIndex];
+
+  // Format date as DD/MM/YYYY
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const year = today.getFullYear();
+
+  document.getElementById('cardDayLabel').textContent = `ไพ่แห่งวันที่ ${day}/${month}/${year}`;
+  document.getElementById('cardDayImg').src = card.image;
+  document.getElementById('cardDayImg').alt = card.nameTh;
+  document.getElementById('cardDayNameTh').textContent = card.nameTh;
+  document.getElementById('cardDayNameEn').textContent = card.nameEn;
+
+  const meaningDiv = document.getElementById('cardDayMeaning');
+  meaningDiv.innerHTML = `<div class="widget-card-day-meaning-text">${card.meanings.general}</div>`;
+
+  // Show widget
+  document.getElementById('widgetCardDay').style.display = 'block';
+}
+
+function toggleCardDayMeaning() {
+  const meaningDiv = document.getElementById('cardDayMeaning');
+  const toggleBtn = document.getElementById('cardDayToggle');
+
+  if (meaningDiv.classList.contains('expanded')) {
+    meaningDiv.classList.remove('expanded');
+    toggleBtn.textContent = 'ดูความหมาย';
+  } else {
+    meaningDiv.classList.add('expanded');
+    toggleBtn.textContent = 'ซ่อนความหมาย';
+  }
+}
+
+// ========================================================================
+// WIDGET 2: ZODIAC CARD
+// ========================================================================
+
+const ZODIAC_TO_CARD = {
+  'aries': { id: 4, symbol: '♈', name: 'เมษ' },
+  'taurus': { id: 5, symbol: '♉', name: 'พฤษภ' },
+  'gemini': { id: 6, symbol: '♊', name: 'เมถุน' },
+  'cancer': { id: 7, symbol: '♋', name: 'กรกฎ' },
+  'leo': { id: 8, symbol: '♌', name: 'สิงห์' },
+  'virgo': { id: 9, symbol: '♍', name: 'กันย์' },
+  'libra': { id: 11, symbol: '♎', name: 'ตุลย์' },
+  'scorpio': { id: 13, symbol: '♏', name: 'พิจิก' },
+  'sagittarius': { id: 14, symbol: '♐', name: 'ธนู' },
+  'capricorn': { id: 15, symbol: '♑', name: 'มังกร' },
+  'aquarius': { id: 17, symbol: '♒', name: 'กุมภ์' },
+  'pisces': { id: 18, symbol: '♓', name: 'มีน' }
+};
+
+let selectedZodiac = null;
+
+function initZodiacModal() {
+  const grid = document.getElementById('zodiacGrid');
+  grid.innerHTML = '';
+
+  // Load saved zodiac from localStorage
+  const savedZodiac = localStorage.getItem('tarot_zodiac');
+  if (savedZodiac && ZODIAC_TO_CARD[savedZodiac]) {
+    selectedZodiac = savedZodiac;
+  }
+
+  // Create zodiac options
+  Object.entries(ZODIAC_TO_CARD).forEach(([key, zodiac]) => {
+    const option = document.createElement('div');
+    option.className = 'zodiac-option';
+    if (selectedZodiac === key) {
+      option.classList.add('selected');
+    }
+    option.innerHTML = `
+      <div class="zodiac-symbol">${zodiac.symbol}</div>
+      <div class="zodiac-name">${zodiac.name}</div>
+    `;
+    option.addEventListener('click', () => selectZodiac(key));
+    grid.appendChild(option);
+  });
+
+  // Close modal on overlay click
+  document.getElementById('zodiacModal').addEventListener('click', (e) => {
+    if (e.target.id === 'zodiacModal') {
+      closeZodiacModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeZodiacModal();
+    }
+  });
+}
+
+function openZodiacModal() {
+  document.getElementById('zodiacModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeZodiacModal() {
+  document.getElementById('zodiacModal').classList.remove('active');
+  document.body.style.overflow = '';
+  // Reset to grid view when closing
+  setTimeout(() => {
+    backToZodiacGrid();
+  }, 300);
+}
+
+function selectZodiac(zodiacKey) {
+  selectedZodiac = zodiacKey;
+  localStorage.setItem('tarot_zodiac', zodiacKey);
+
+  // Update selected styling
+  document.querySelectorAll('.zodiac-option').forEach(opt => {
+    opt.classList.remove('selected');
+  });
+  event.currentTarget.classList.add('selected');
+
+  // Show result
+  showZodiacResult(zodiacKey);
+}
+
+function showZodiacResult(zodiacKey) {
+  const zodiac = ZODIAC_TO_CARD[zodiacKey];
+  const card = TAROT_DATA.cards[zodiac.id];
+
+  document.getElementById('zodiacResultImg').src = card.image;
+  document.getElementById('zodiacResultImg').alt = card.nameTh;
+  document.getElementById('zodiacResultNameTh').textContent = card.nameTh;
+  document.getElementById('zodiacResultNameEn').textContent = card.nameEn;
+  document.getElementById('zodiacResultMeaning').textContent = card.meanings.general;
+
+  // Switch views
+  document.getElementById('zodiacGridView').style.display = 'none';
+  document.getElementById('zodiacResultView').style.display = 'block';
+}
+
+function backToZodiacGrid() {
+  document.getElementById('zodiacResultView').style.display = 'none';
+  document.getElementById('zodiacGridView').style.display = 'block';
+}

@@ -1510,6 +1510,327 @@ body {
 }
 
 /* ========================================================================
+   LANDING WIDGETS
+   ======================================================================== */
+
+/* Widget 1: Card of the Day */
+.widget-card-day {
+  max-width: 400px;
+  margin: 30px auto 20px;
+  padding: 25px 20px;
+  background: rgba(26, 0, 51, 0.6);
+  border: 1.5px solid var(--gold);
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 1s ease-out 1s both;
+}
+
+.widget-card-day-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 15px;
+  opacity: 0.9;
+}
+
+.widget-card-day-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.widget-card-day-img {
+  width: 70px;
+  height: 112px;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.widget-card-day-names {
+  text-align: left;
+}
+
+.widget-card-day-name-th {
+  font-family: 'Noto Serif Thai', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+
+.widget-card-day-name-en {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.widget-card-day-toggle {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 20px;
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 0.9rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.widget-card-day-toggle:hover {
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.widget-card-day-meaning {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  text-align: left;
+}
+
+.widget-card-day-meaning.expanded {
+  max-height: 200px;
+  padding-top: 15px;
+}
+
+.widget-card-day-meaning-text {
+  font-family: 'Sarabun', sans-serif;
+  font-size: 0.95rem;
+  color: var(--cream);
+  opacity: 0.85;
+  line-height: 1.7;
+}
+
+/* Widget 2: Zodiac Button */
+.widget-zodiac-btn {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: fadeIn 1s ease-out 1.2s both;
+}
+
+.btn-zodiac {
+  background: rgba(45, 0, 82, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: var(--cream);
+  padding: 10px 24px;
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 0.95rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.btn-zodiac:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* Zodiac Modal */
+.zodiac-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.zodiac-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zodiac-modal-content {
+  position: relative;
+  background: linear-gradient(135deg, rgba(26, 0, 51, 0.95) 0%, rgba(10, 0, 20, 0.98) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.zodiac-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: var(--gold);
+  font-size: 2rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.zodiac-modal-close:hover {
+  background: rgba(212, 175, 55, 0.2);
+  transform: rotate(90deg);
+}
+
+.zodiac-modal-inner {
+  min-height: 300px;
+}
+
+.zodiac-modal-title {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 1.4rem;
+  color: var(--gold-bright);
+  text-align: center;
+  margin-bottom: 25px;
+  text-shadow: 0 0 15px var(--gold-glow);
+}
+
+.zodiac-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .zodiac-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+}
+
+.zodiac-option {
+  background: rgba(45, 0, 82, 0.5);
+  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  border-radius: 10px;
+  padding: 15px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.zodiac-option:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+.zodiac-option.selected {
+  background: rgba(212, 175, 55, 0.3);
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 20px var(--gold-glow);
+}
+
+.zodiac-symbol {
+  font-size: 2rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.zodiac-name {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 0.9rem;
+  color: var(--cream);
+}
+
+/* Zodiac Result View */
+.zodiac-result-view {
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.zodiac-result-img {
+  width: 120px;
+  height: 192px;
+  object-fit: cover;
+  border: 2.5px solid var(--gold);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 25px var(--gold-glow);
+}
+
+.zodiac-result-name-th {
+  font-family: 'Noto Serif Thai', serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--cream);
+  margin-bottom: 5px;
+}
+
+.zodiac-result-name-en {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 20px;
+}
+
+.zodiac-result-meaning {
+  font-family: 'Sarabun', sans-serif;
+  font-size: 0.95rem;
+  color: var(--cream);
+  opacity: 0.85;
+  line-height: 1.7;
+  margin-bottom: 25px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.zodiac-result-back {
+  background: rgba(45, 0, 82, 0.6);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  padding: 10px 25px;
+  font-family: 'Nino Serif Thai', serif;
+  font-size: 0.95rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.zodiac-result-back:hover {
+  background: rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* ========================================================================
    TAROT GUIDE PAGE STYLES
    ======================================================================== */
 

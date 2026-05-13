@@ -28,6 +28,6 @@ pdf.py
 # Reference files
 index 2.html
 Reference*.png
-Screenshot*.png 
-
+Screenshot*.png
+Reference/
 prompt.md

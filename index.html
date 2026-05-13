@@ -70,6 +70,27 @@
         เปิดประตูสู่จักรวาล สัมผัสชะตากรรมที่จารึกไว้ด้วยไพ่ยิปซีโบราณ
         <br class="hidden sm:inline">ปล่อยให้พลังจากดวงดาวนำทางให้คุณค้นพบคำตอบที่ซ่อนอยู่ในจิตใต้สำนึก
       </p>
+
+      <!-- Widget 1: Card of the Day -->
+      <div class="widget-card-day" id="widgetCardDay" style="display:none;">
+        <div class="widget-card-day-label" id="cardDayLabel">ไพ่แห่งวันที่ --/--/----</div>
+        <div class="widget-card-day-content">
+          <img class="widget-card-day-img" id="cardDayImg" src="" alt="Card of the Day">
+          <div class="widget-card-day-names">
+            <div class="widget-card-day-name-th" id="cardDayNameTh">-</div>
+            <div class="widget-card-day-name-en" id="cardDayNameEn">-</div>
+          </div>
+        </div>
+        <button class="widget-card-day-toggle" id="cardDayToggle" onclick="toggleCardDayMeaning()">
+          ดูความหมาย
+        </button>
+        <div class="widget-card-day-meaning" id="cardDayMeaning"></div>
+      </div>
+
+      <!-- Widget 2: Zodiac Card Button -->
+      <div class="widget-zodiac-btn">
+        <button class="btn-zodiac" onclick="openZodiacModal()">ค้นหาไพ่ประจำราศีของคุณ</button>
+      </div>
     </div>
     <div class="center-btn">
       <button class="btn-primary w-full sm:w-auto px-8 md:px-16" onclick="goToCategory()">เริ่มเปิดไพ่</button>
@@ -213,6 +234,28 @@
   </div>
 </footer>
 
+</div>
+
+<!-- Zodiac Modal -->
+<div class="zodiac-modal" id="zodiacModal">
+  <div class="zodiac-modal-content">
+    <button class="zodiac-modal-close" onclick="closeZodiacModal()">&times;</button>
+    <div class="zodiac-modal-inner">
+      <!-- Zodiac Grid View -->
+      <div class="zodiac-grid-view" id="zodiacGridView">
+        <h3 class="zodiac-modal-title">ราศีของคุณคือ?</h3>
+        <div class="zodiac-grid" id="zodiacGrid"></div>
+      </div>
+      <!-- Zodiac Result View -->
+      <div class="zodiac-result-view" id="zodiacResultView" style="display:none;">
+        <img class="zodiac-result-img" id="zodiacResultImg" src="" alt="Zodiac Card">
+        <div class="zodiac-result-name-th" id="zodiacResultNameTh"></div>
+        <div class="zodiac-result-name-en" id="zodiacResultNameEn"></div>
+        <div class="zodiac-result-meaning" id="zodiacResultMeaning"></div>
+        <button class="zodiac-result-back" onclick="backToZodiacGrid()">เปลี่ยนราศี</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="js/app.js"></script>
