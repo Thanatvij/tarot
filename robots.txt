@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thanatvij.github.io/tarot/sitemap.xml
