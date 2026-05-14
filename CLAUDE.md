@@ -36,6 +36,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Card meanings for 5 categories (love, study, work, money, general)
   - **Reversed meanings** (meaningsReversed) for all 78 cards
   - Keywords for reversed/upright interpretations
+- **Tarot Guide Book.md** — Complete tarot reference guide by Thanat V.
+  - All 78 cards with detailed Thai meanings
+  - Keywords for upright and reversed positions
+  - Meanings by category (work, finance, love, health)
+  - Element and body system associations
+  - Spread diagrams (Celtic Cross, 3-card, etc.)
+  - Reading tips and best practices
 
 ## Key Features
 
@@ -93,6 +100,7 @@ tarot-web/
 │   ├── app.js           # Card logic, state management, readings, share image
 │   └── guide.js         # Guide page functionality (tabs, modal, lazy loading)
 ├── tarot-all.json       # Complete tarot data (78 cards with meanings + reversed)
+├── Tarot Guide Book.md  # Complete tarot reference guide by Thanat V.
 ├── CLAUDE.md            # This file — Claude Code project documentation
 ├── CLAUDE_zz_nutz.md    # Backup/old documentation (can be removed)
 ├── README.md            # User-facing project documentation
